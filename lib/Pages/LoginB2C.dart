@@ -36,27 +36,29 @@ class _LoginB2CState extends State<LoginB2C> {
       result = await _appAuth.authorizeAndExchangeCode(
         AuthorizationTokenRequest(
             AzureB2CConfig.clientId, AzureB2CConfig.redirectUrl,
-            issuer:
-                'https://login.microsoftonline.com/068a0e5a-3b47-430c-9cf3-4036ad450338/v2.0',
-            // discoveryUrl: AzureB2CConfig.discoveryUrl,
+            // issuer: 'https://login.microsoftonline.com/068a0e5a-3b47-430c-9cf3-4036ad450338/v2.0',
+           // issuer: 'https://login.microsoftonline.com/faa9976b-ac04-463b-b6a9-26899bf87a7a/v2.0',
+           discoveryUrl: AzureB2CConfig.discoveryUrl,
             scopes: AzureB2CConfig.scopes),
       );
+      setState(() {
+        token = result.idToken;
+        accessToken = result.accessToken;
+        expiry = result.accessTokenExpirationDateTime;
+        refreshToken = result.refreshToken;
+      });
+      // var idToken = result.accessToken;
+      final graphResponse = await http
+          .get('https://graph.microsoft.com/v1.0/me', headers: {
+        HttpHeaders.authorizationHeader: "Bearer ${result.idToken}"
+      });
+      print(graphResponse.body);
+
+      print(result.authorizationAdditionalParameters.keys.length);
+      print(result.accessToken);
     } catch (error) {
       print("Login error ${error.toString()}");
     }
-    setState(() {
-      token = result.idToken;
-      accessToken = result.accessToken;
-      expiry = result.accessTokenExpirationDateTime;
-      refreshToken = result.refreshToken;
-    });
-    // var idToken = result.accessToken;
-    final graphResponse = await http.get('https://graph.microsoft.com/v1.0/me',
-        headers: {HttpHeaders.authorizationHeader: "Bearer ${result.idToken}"});
-    print(graphResponse.body);
-
-    print(result.authorizationAdditionalParameters.keys.length);
-    print(result.accessToken);
   }
 
   _getUserDetails(token) async {
@@ -132,22 +134,22 @@ class _LoginB2CState extends State<LoginB2C> {
                 },
                 child: Text('Login'),
               ),
-              accessToken != null
-                  ? RaisedButton(
-                      onPressed: () {
-                        _getUserDetails(accessToken);
-                      },
-                      child: Text('Get User details'),
-                    )
-                  : Container(),
-              accessToken != null
-                  ? RaisedButton(
-                      onPressed: () {
-                        _addItem();
-                      },
-                      child: Text('Add Item'),
-                    )
-                  : Container(),
+              // accessToken != null
+              //     ? RaisedButton(
+              //         onPressed: () {
+              //           _getUserDetails(accessToken);
+              //         },
+              //         child: Text('Get User details'),
+              //       )
+              //     : Container(),
+              // accessToken != null
+              //     ? RaisedButton(
+              //         onPressed: () {
+              //           _addItem();
+              //         },
+              //         child: Text('Add Item'),
+              //       )
+              //     : Container(),
               Text(
                 'TokenId',
                 style: TextStyle(fontWeight: FontWeight.bold),
